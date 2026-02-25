@@ -66,9 +66,8 @@ func (r *BumpResult) PrintSummary() {
 
 // BumpDeps detects the current branch, maps it to the corresponding
 // fluxcd/pkg branch, fetches the latest module versions from that branch,
-// and updates go.mod accordingly. When preReleasePkg is true, main branches
-// use flux/v2.8.x instead of main (temporary workaround for Flux 2.8).
-func BumpDeps(ctx context.Context, repoPath string, preReleasePkg bool) (*BumpResult, error) {
+// and updates go.mod accordingly.
+func BumpDeps(ctx context.Context, repoPath string) (*BumpResult, error) {
 	localBranch, err := detectLocalBranch(repoPath)
 	if err != nil {
 		return nil, err
@@ -81,7 +80,7 @@ func BumpDeps(ctx context.Context, repoPath string, preReleasePkg bool) (*BumpRe
 	}
 	fmt.Println("Controller:", controllerName)
 
-	pkgBranch, err := mapToPkgBranch(localBranch, controllerName, preReleasePkg)
+	pkgBranch, err := mapToPkgBranch(localBranch, controllerName)
 	if err != nil {
 		return nil, err
 	}
@@ -170,11 +169,8 @@ var releaseBranchRegex = regexp.MustCompile(`^release/v\d+\.(\d+)\.x$`)
 // branch using the controller's baseline minor version offset.
 // This function also works for controllerName="flux2" and
 // controllerBranch=<flux2 repo branch>.
-func mapToPkgBranch(controllerBranch, controllerName string, preReleasePkg bool) (string, error) {
-	switch {
-	case preReleasePkg: // TODO: remove after 2.8.0 is released
-		return "flux/v2.8.x", nil
-	case controllerBranch == "main":
+func mapToPkgBranch(controllerBranch, controllerName string) (string, error) {
+	if controllerBranch == "main" {
 		return "main", nil
 	}
 	m := releaseBranchRegex.FindStringSubmatch(controllerBranch)

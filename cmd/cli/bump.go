@@ -32,23 +32,14 @@ var bumpCmd = &cobra.Command{
 	RunE:  runBump,
 }
 
-var bumpCmdFlags struct {
-	preReleasePkg bool
-}
-
 func init() {
 	rootCmd.AddCommand(bumpCmd)
-
-	bumpCmd.Flags().BoolVar(&bumpCmdFlags.preReleasePkg, "pre-release-pkg", false,
-		"Temporary flag for Flux 2.8: use the flux/v2.8.x pkg branch for main branches "+
-			"because the pkg release branch was cut before the Flux distribution release. "+
-			"Remove this flag once Flux 2.8.0 is released.")
 }
 
 func runBump(cmd *cobra.Command, args []string) error {
 	ctx := setupSignalHandler()
 
-	res, err := internal.BumpDeps(ctx, ".", bumpCmdFlags.preReleasePkg)
+	res, err := internal.BumpDeps(ctx, ".")
 	if err != nil {
 		return fmt.Errorf("failed to bump dependencies: %w", err)
 	}
